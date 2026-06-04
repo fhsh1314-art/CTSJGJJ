@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>穿透式监管场景介绍</title>
+  <style>
+    :root {
+      --blue-900: #123e7a;
+      --blue-800: #1856a7;
+      --blue-700: #2267cf;
+      --blue-600: #337fe5;
+      --blue-500: #4c95ee;
+      --blue-100: #eaf4ff;
+      --blue-050: #f4f9ff;
+      --ink-900: #12264a;
+      --ink-700: #344869;
+      --ink-500: #677895;
+      --line: rgba(104, 154, 215, 0.22);
+      --card: rgba(255, 255, 255, 0.88);
+      --shadow: 0 22px 60px rgba(31, 96, 170, 0.14);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink-700);
+      font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background:
+        linear-gradient(rgba(72, 142, 227, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(72, 142, 227, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 12% 18%, rgba(88, 159, 239, 0.18), transparent 28%),
+        linear-gradient(180deg, #f6fbff 0%, #edf6ff 44%, #f8fbff 100%);
+      background-size: 72px 72px, 72px 72px, auto, auto;
+    }
+
+    .page {
+      width: min(100%, 1920px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 12px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 112px;
+      margin: 0 auto 26px;
+      padding: 26px 30px;
+      border: 1px solid rgba(103, 169, 238, 0.38);
+      border-radius: 0 0 var(--radius) var(--radius);
+      background: rgba(248, 252, 255, 0.78);
+      box-shadow: 0 16px 40px rgba(55, 128, 210, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2267cf, #52b7e9);
+      box-shadow: inset 18px 0 0 rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      background: #fff;
+    }
+
+    .brand-mark::before {
+      left: 18px;
+      top: 22px;
+      width: 26px;
+      height: 8px;
+      border-radius: 8px;
+    }
+
+    .brand-mark::after {
+      left: 18px;
+      top: 0;
+      width: 8px;
+      height: 52px;
+      opacity: 0.95;
+    }
+
+    .brand-title {
+      margin: 0 0 8px;
+      color: var(--ink-900);
+      font-size: 26px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      color: #6b7b97;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 24px;
+      border: 1px solid rgba(79, 148, 226, 0.28);
+      border-radius: 999px;
+      color: #2d7bda;
+      background: #e9f4ff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+      font-size: 18px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .nav-shell {
+      margin: 0 auto 30px;
+      padding: 20px;
+      border-radius: 36px;
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: var(--shadow);
+    }
+
+    .module-nav {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .module-tab {
+      min-height: 102px;
+      padding: 20px 18px;
+      border: 0;
+      border-radius: 20px;
+      color: #6c7d98;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+      text-align: center;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .module-tab:hover {
+      transform: translateY(-2px);
+      background: rgba(235, 245, 255, 0.74);
+    }
+
+    .module-tab.active {
+      color: #fff;
+      background: linear-gradient(180deg, #4a94ea 0%, #2363cf 100%);
+      box-shadow: 0 18px 38px rgba(39, 103, 205, 0.28);
+    }
+
+    .tab-title {
+      display: block;
+      margin-bottom: 10px;
+      color: inherit;
+      font-size: 23px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .tab-subtitle {
+      display: block;
+      color: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.35;
+      opacity: 0.94;
+    }
+
+    .content-panel {
+      display: none;
+      gap: 30px;
+      padding: 34px 42px 42px;
+      border-radius: 38px 38px 0 0;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+    }
+
+    .content-panel.active {
+      display: grid;
+      grid-template-columns: minmax(0, 1.54fr) minmax(360px, 0.96fr);
+      align-items: start;
+    }
+
+    .hero-copy {
+      padding: 8px 2px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: var(--blue-800);
+      background: #e9f4ff;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      box-shadow: 0 0 0 6px rgba(62, 145, 234, 0.14);
+    }
+
+    h1 {
+      margin: 0 0 22px;
+      max-width: 980px;
+      color: var(--ink-900);
+      font-size: clamp(34px, 2.3vw, 48px);
+      line-height: 1.22;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 1060px;
+      margin: 0 0 30px;
+      color: #6d7c95;
+      font-size: 21px;
+      line-height: 1.82;
+      font-weight: 700;
+    }
+
+    .blue-stage {
+      position: relative;
+      overflow: hidden;
+      min-height: 392px;
+      padding: 34px 40px 30px;
+      border-radius: 28px 28px 0 0;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(91, 168, 246, 0.95) 0%, rgba(34, 92, 204, 1) 100%);
+      box-shadow: 0 26px 56px rgba(31, 95, 201, 0.28);
+    }
+
+    .blue-stage::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -190px auto;
+      width: 420px;
+      height: 420px;
+      border: 42px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .stage-pill {
+      display: inline-block;
+      margin-bottom: 24px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .stage-title {
+      position: relative;
+      margin: 0 0 18px;
+      font-size: clamp(30px, 2vw, 42px);
+      line-height: 1.22;
+      font-weight: 900;
+      z-index: 1;
+    }
+
+    .stage-desc {
+      position: relative;
+      max-width: 920px;
+      margin: 0 0 28px;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 20px;
+      line-height: 1.78;
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .stage-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      z-index: 1;
+    }
+
+    .stage-card {
+      min-height: 126px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .stage-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: #fff;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .stage-card span {
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 17px;
+      line-height: 1.68;
+      font-weight: 700;
+    }
+
+    .chip-row {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+      z-index: 1;
+    }
+
+    .chip {
+      padding: 10px 18px;
+      border-radius: 999px;
+      color: #f4f9ff;
+      background: rgba(255, 255, 255, 0.14);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .side-column {
+      display: grid;
+      gap: 24px;
+    }
+
+    .info-card {
+      position: relative;
+      overflow: hidden;
+      padding: 30px 30px;
+      border: 1px solid rgba(120, 168, 226, 0.18);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 0 14px 34px rgba(45, 95, 156, 0.08);
+    }
+
+    .info-card h2,
+    .info-card h3 {
+      margin: 0 0 18px;
+      color: var(--ink-900);
+      font-size: 24px;
+      line-height: 1.3;
+      font-weight: 900;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: #697994;
+      font-size: 18px;
+      line-height: 1.76;
+      font-weight: 700;
+    }
+
+    .bullet-list {
+      display: grid;
+      gap: 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 30px;
+      color: #314661;
+      font-size: 18px;
+      line-height: 1.72;
+      font-weight: 800;
+    }
+
+    .bullet-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      box-shadow: 0 0 0 6px rgba(62, 145, 234, 0.14);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .kpi {
+      min-height: 118px;
+      padding: 20px;
+      border-radius: 18px;
+      background: #f3f8ff;
+      border: 1px solid rgba(118, 168, 229, 0.17);
+    }
+
+    .kpi b {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--blue-800);
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .kpi span {
+      color: #6a7a94;
+      font-size: 15px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    .capability-grid,
+    .model-grid,
+    .tool-grid,
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .mini-card {
+      min-height: 156px;
+      padding: 22px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 12px 28px rgba(54, 108, 176, 0.06);
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--ink-900);
+      font-size: 20px;
+      line-height: 1.36;
+      font-weight: 900;
+    }
+
+    .mini-card span {
+      color: #667890;
+      font-size: 16px;
+      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .model-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .model-card {
+      min-height: 126px;
+      padding: 18px;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(135deg, #2d7edf 0%, #265dc6 100%);
+      box-shadow: 0 14px 34px rgba(38, 93, 198, 0.18);
+    }
+
+    .model-card:nth-child(2n) {
+      background: linear-gradient(135deg, #16a6b1 0%, #1878bc 100%);
+    }
+
+    .model-card:nth-child(3n) {
+      background: linear-gradient(135deg, #6b81e7 0%, #2f65cf 100%);
+    }
+
+    .model-card strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .model-card span {
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--line);
+    }
+
+    .time {
+      color: var(--blue-700);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink-900);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .timeline-item span {
+      color: #667790;
+      font-size: 16px;
+      line-height: 1.64;
+      font-weight: 700;
+    }
+
+    .quote-box {
+      margin-top: 28px;
+      padding: 28px;
+      border-radius: 24px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue-800), var(--blue-500));
+      box-shadow: 0 22px 42px rgba(40, 111, 202, 0.22);
+    }
+
+    .quote-box strong {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 24px;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .quote-box span {
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 18px;
+      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(90px, 1fr));
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .flow-step {
+      position: relative;
+      min-height: 82px;
+      padding: 16px 10px;
+      border-radius: 16px;
+      color: var(--blue-800);
+      background: #edf6ff;
+      border: 1px solid rgba(96, 153, 224, 0.19);
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -8px;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid #80afe6;
+      border-right: 2px solid #80afe6;
+      transform: translateY(-50%) rotate(45deg);
+      z-index: 2;
+    }
+
+    .section-title {
+      margin: 34px 0 0;
+      color: var(--ink-900);
+      font-size: 28px;
+      line-height: 1.3;
+      font-weight: 900;
+    }
+
+    .muted-note {
+      margin-top: 12px;
+      color: #73849c;
+      font-size: 17px;
+      line-height: 1.66;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1280px) {
+      .page {
+        padding: 10px 14px 32px;
+      }
+
+      .topbar {
+        border-radius: 24px;
+      }
+
+      .content-panel.active {
+        grid-template-columns: 1fr;
+      }
+
+      .module-nav,
+      .capability-grid,
+      .tool-grid,
+      .plan-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .model-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .flow {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar,
+      .brand {
+        align-items: flex-start;
+      }
+
+      .topbar {
+        flex-direction: column;
+        padding: 22px;
+      }
+
+      .brand-title {
+        font-size: 22px;
+      }
+
+      .brand-subtitle {
+        font-size: 15px;
+      }
+
+      .module-nav,
+      .capability-grid,
+      .model-grid,
+      .tool-grid,
+      .plan-grid,
+      .stage-grid,
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content-panel {
+        padding: 24px 18px 30px;
+        border-radius: 28px 28px 0 0;
+      }
+
+      .blue-stage {
+        padding: 26px 22px;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+
+      .flow {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1 class="brand-title">穿透式监管场景介绍</h1>
+          <div class="brand-subtitle">FineAndYou | 总工办 · 国资监管数智化场景资产</div>
+        </div>
+      </div>
+      <a class="back-btn" href="javascript:void(0)" aria-label="返回总工办首页">← 返回总工办首页</a>
+    </header>
+
+    <nav class="nav-shell" aria-label="场景模块">
+      <div class="module-nav">
+        <button class="module-tab active" data-target="overview">
+          <span class="tab-title">场景总览</span>
+          <span class="tab-subtitle">核心链路、领域模型、监管闭环</span>
+        </button>
+        <button class="module-tab" data-target="policy">
+          <span class="tab-title">政策背景</span>
+          <span class="tab-subtitle">监管要求、政策脉络、重点方向</span>
+        </button>
+        <button class="module-tab" data-target="solution">
+          <span class="tab-title">方案说明</span>
+          <span class="tab-subtitle">建设观点、能力边界、落地路径</span>
+        </button>
+        <button class="module-tab" data-target="tools">
+          <span class="tab-title">场景工具</span>
+          <span class="tab-subtitle">演示系统、场景 Demo、复用资产</span>
+        </button>
+        <button class="module-tab" data-target="plan">
+          <span class="tab-title">推进计划</span>
+          <span class="tab-subtitle">阶段目标、节点事项、协同机制</span>
+        </button>
+      </div>
+    </nav>
+
+    <section class="content-panel active" id="overview">
+      <div class="hero-copy">
+        <div class="eyebrow">场景总览</div>
+        <h1>以“数据穿透 + 模型识别 + 线索闭环”为核心，服务国资监管从看得见到管得住</h1>
+        <p class="lead">穿透式监管系统面向国资监管场景，将分散在企业、业务系统、报送体系和制度文件中的数据统一接入，通过数据质量门禁、指标报送、规则模型、风险预警、线索处置、整改验收和驾驶舱画像，形成完整监管链路。</p>
+
+        <div class="blue-stage">
+          <span class="stage-pill">穿透式监管</span>
+          <h2 class="stage-title">不是一张关系图，而是一条可追溯、可派单、可整改、可复盘的监管业务链</h2>
+          <p class="stage-desc">系统需要在同一套页面内回答五个问题：发生了什么风险，为什么被识别为风险，证据是否足够，下一步由谁负责，问题是否完成整改并形成留痕。</p>
+          <div class="stage-grid">
+            <div class="stage-card">
+              <strong>数据接入与质量门禁</strong>
+              <span>统一企业、人员、项目、合同、资金、资产等对象，先判断数据能否支撑穿透分析。</span>
+            </div>
+            <div class="stage-card">
+              <strong>模型识别与风险预警</strong>
+              <span>将制度条款、业务规则、异常阈值沉淀为可试跑、可解释、可版本化的监管模型。</span>
+            </div>
+            <div class="stage-card">
+              <strong>证据链与处置链</strong>
+              <span>把合同、付款、审批、股权、报送等证据与预警、线索、整改、验收串联起来。</span>
+            </div>
+            <div class="stage-card">
+              <strong>监管画像与持续运营</strong>
+              <span>从企业、模型、报送、线索等视角持续复盘风险态势和闭环效率。</span>
+            </div>
+          </div>
+          <div class="chip-row">
+            <span class="chip">服务领导研判</span>
+            <span class="chip">提升风险识别</span>
+            <span class="chip">强化问题闭环</span>
+            <span class="chip">沉淀监管资产</span>
+          </div>
+        </div>
+
+        <h2 class="section-title">核心能力模块</h2>
+        <div class="capability-grid">
+          <div class="mini-card"><strong>数据接入与质量门禁</strong><span>数据源、对象模型、字段映射、同步任务、质量检测与质量问题池。</span></div>
+          <div class="mini-card"><strong>监管数据报送</strong><span>指标库、报送模板、报送任务、在线填报、报送审核与进度追踪。</span></div>
+          <div class="mini-card"><strong>规则模型市场</strong><span>模型目录、模型编辑器、模型试跑、模型版本与模型画像统一运营。</span></div>
+          <div class="mini-card"><strong>风险预警研判</strong><span>模型运行、预警中心、预警详情、命中原因和证据链解释。</span></div>
+          <div class="mini-card"><strong>线索闭环处置</strong><span>转线索、派单核查、整改处理、复核验收、督办看板和销号归档。</span></div>
+          <div class="mini-card"><strong>监管资产与 AI 辅助</strong><span>制度文件、条款标注、责任矩阵、证据模板、预警解释和监管报告。</span></div>
+        </div>
+
+        <h2 class="section-title">重点领域模型体系</h2>
+        <p class="muted-note">现有材料已沉淀 65 个规格模型，包括 8 个单领域、跨领域组合模型，并可按客户口径扩展到十大领域模型体系。</p>
+        <div class="model-grid">
+          <div class="model-card"><strong>产权</strong><span>登记不一致、违规新增法人、壳公司异常经营、个人代持风险。</span></div>
+          <div class="model-card"><strong>投资</strong><span>非主业投资、负面清单、未批先投、超计划超授权。</span></div>
+          <div class="model-card"><strong>财会</strong><span>大额异常支付、无合同支付、账户监管、债务兑付异常。</span></div>
+          <div class="model-card"><strong>人资</strong><span>薪酬畸高、违规津补贴、工资总额预算、关键岗位异常。</span></div>
+          <div class="model-card"><strong>金融</strong><span>牌照缺失、基金实缴不足、到期未退出、投向偏离。</span></div>
+          <div class="model-card"><strong>合同</strong><span>未经法审、审签倒置、应招未招、超合同支付。</span></div>
+          <div class="model-card"><strong>采购</strong><span>采购方式不合规、围标串标、主体异常关联、报价规律异常。</span></div>
+          <div class="model-card"><strong>资产</strong><span>权属不清、闲置低效、生命周期断点、处置评估异常。</span></div>
+          <div class="model-card"><strong>跨领域</strong><span>虚假贸易、重大工程全过程、关键岗位离职规避追责。</span></div>
+          <div class="model-card"><strong>扩展领域</strong><span>面向客户制度、数据基础和监管重点补充区域化特色模型。</span></div>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="info-card">
+          <h2>适合内部同学这样理解</h2>
+          <ul class="bullet-list">
+            <li>穿透式监管不是“多做一张图”，而是把数据、规则、证据、责任和流程打通。</li>
+            <li>客户真正关心的是风险事项能否被发现、解释、派发、整改和复盘。</li>
+            <li>对外沟通时先讲监管价值，再讲系统模块和帆软产品承接方式。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>核心对象</h3>
+          <p>聚焦国资委、集团领导、监管部门、业务部门、数据管理员、模型管理员、处置人员和复核人员等多角色协同。</p>
+        </div>
+        <div class="info-card">
+          <h3>核心诉求</h3>
+          <p>解决监管数据分散、风险识别滞后、证据解释不足、问题派单低效、整改销号难追溯等问题。</p>
+        </div>
+        <div class="info-card">
+          <h3>当前素材基础</h3>
+          <div class="kpi-grid">
+            <div class="kpi"><b>65</b><span>规格模型</span></div>
+            <div class="kpi"><b>8+</b><span>重点领域</span></div>
+            <div class="kpi"><b>1</b><span>闭环演示系统</span></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="content-panel" id="policy">
+      <div>
+        <div class="eyebrow">政策背景</div>
+        <h1>从“管资本”到“穿透式监管”，国资监管正在向在线化、模型化、闭环化演进</h1>
+        <p class="lead">政策背景页建议用“时间线 + 重点政策卡片”呈现，让客户先看到监管方式变化，再理解系统为什么要建设数据贯通、模型预警和闭环处置能力。</p>
+
+        <div class="timeline">
+          <div class="timeline-item"><div class="time">2017</div><div><strong>以管资本为主推进国资监管职能转变</strong><span>监管重心从直接管企业事项，逐步转向资本布局、风险管控和出资人职责履行。</span></div></div>
+          <div class="timeline-item"><div class="time">2019</div><div><strong>中央企业内控体系建设与监督强化</strong><span>强调风险防控、内控监督、合规经营和责任落实，为穿透式监管提供管理基础。</span></div></div>
+          <div class="timeline-item"><div class="time">2023</div><div><strong>决算审核发现问题整改和责任追究持续压实</strong><span>监管要求不只发现问题，还要推动整改、追责和闭环留痕。</span></div></div>
+          <div class="timeline-item"><div class="time">2025</div><div><strong>加强国有企业穿透式监管课题研究</strong><span>围绕智能化穿透式监管系统建设框架、重点领域监管内容和技术路线开展研究。</span></div></div>
+          <div class="timeline-item"><div class="time">2025+</div><div><strong>地方实践进入场景落地期</strong><span>多地围绕财务、投资、采购、资产、全级次企业等方向推进数据穿透和风险模型实践。</span></div></div>
+        </div>
+
+        <h2 class="section-title">重点政策表达卡片</h2>
+        <div class="capability-grid">
+          <div class="mini-card"><strong>从管企业到管资本</strong><span>监管不再停留在报表汇总，而是围绕资本流向、重大事项、风险责任形成穿透。</span></div>
+          <div class="mini-card"><strong>从事后检查到实时预警</strong><span>通过数据自动采集、规则模型和 AI 辅助，把风险识别从事后抽查前移到过程监测。</span></div>
+          <div class="mini-card"><strong>从单点监督到闭环监管</strong><span>预警必须进入线索、核查、整改、验收和销号，监管动作可追溯。</span></div>
+          <div class="mini-card"><strong>从经验监管到模型监管</strong><span>将制度条款、业务规则、责任矩阵沉淀为可运行、可解释、可复用的模型资产。</span></div>
+          <div class="mini-card"><strong>从报送数据到监管数据</strong><span>报送数据不只是留档材料，而要支撑风险判断、专题分析和领导研判。</span></div>
+          <div class="mini-card"><strong>从系统建设到资产运营</strong><span>长期价值来自模型、条款、数据标准、证据模板和案例经验的持续沉淀。</span></div>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="info-card">
+          <h2>对客户的关键结论</h2>
+          <ul class="bullet-list">
+            <li>穿透式监管是监管方式升级，不是单一信息化项目。</li>
+            <li>建设重点应从“看数据”转向“识别风险并推动处置”。</li>
+            <li>政策表达要连接客户现有制度、报送体系和重点监管领域。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>页面呈现建议</h3>
+          <p>左侧时间线讲政策演进，右侧卡片讲政策对系统能力的要求。重点政策可以点击展开，展示政策要点、监管要求、对应系统能力和可讲案例。</p>
+        </div>
+        <div class="quote-box">
+          <strong>建议页面话术</strong>
+          <span>政策要求的核心不是“多报几张表”，而是让国资监管能够向下穿透到全级次企业、业务过程、资金流向和整改责任。</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="content-panel" id="solution">
+      <div>
+        <div class="eyebrow">方案说明</div>
+        <h1>我们的方案观点：穿透式监管不是大屏展示，而是围绕监管事项持续运营的业务闭环</h1>
+        <p class="lead">方案说明页不建议堆菜单功能，而要用几个强观点解释“为什么这样建、先建什么、怎么落地、帆软产品怎么承接”。</p>
+
+        <div class="flow" aria-label="方案主链路">
+          <div class="flow-step">数据接入</div>
+          <div class="flow-step">质量门禁</div>
+          <div class="flow-step">报送补充</div>
+          <div class="flow-step">规则模型</div>
+          <div class="flow-step">风险预警</div>
+          <div class="flow-step">线索派单</div>
+          <div class="flow-step">整改验收</div>
+          <div class="flow-step">监管画像</div>
+        </div>
+
+        <div class="capability-grid">
+          <div class="mini-card"><strong>先建监管对象，再做穿透分析</strong><span>统一企业、人员、项目、合同、资金、资产、供应商等对象，解决跨系统口径不一致问题。</span></div>
+          <div class="mini-card"><strong>先过数据门禁，再输出风险结论</strong><span>数据缺失、主键缺失、关联失败不能直接认定违规，应进入数据质量线索或人工映射。</span></div>
+          <div class="mini-card"><strong>模型要可解释、可试跑、可版本化</strong><span>每个模型都说明数据来源、主对象、关联链路、触发条件、责任部门和失败处理。</span></div>
+          <div class="mini-card"><strong>预警必须连到证据链和处置链</strong><span>每个风险事项都能回答为什么命中、证据是什么、谁来处理、是否整改完成。</span></div>
+          <div class="mini-card"><strong>AI 嵌入业务现场</strong><span>AI 出现在预警解释、核查建议、规则生成、字段映射和监管报告中，而不是孤立入口。</span></div>
+          <div class="mini-card"><strong>专题页升级为运营页</strong><span>专题页不仅展示分析结果，还要展示规则来源、数据来源、预警线索和下一步动作。</span></div>
+        </div>
+
+        <div class="quote-box">
+          <strong>对外一句话</strong>
+          <span>我们不是替代监管人员判断，而是把数据、规则、证据和流程串起来，让风险事项更早发现、更清楚解释、更快推动整改。</span>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="info-card">
+          <h2>建设边界</h2>
+          <ul class="bullet-list">
+            <li>演示系统负责讲清场景价值和业务闭环。</li>
+            <li>场景 Demo 负责证明帆软产品可搭建可呈现。</li>
+            <li>正式项目承接数据治理、系统集成、权限审计和组织流程。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>能力分层</h3>
+          <p>底层是数据与对象，中间是报送和模型，上层是预警、线索、画像和 AI。每个能力都要能解释它服务哪个监管动作。</p>
+        </div>
+        <div class="info-card">
+          <h3>落地抓手</h3>
+          <p>建议从资金、投资、合同采购、产权这类高价值领域切入，先做 1-2 个能完整跑通闭环的示范专题。</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="content-panel" id="tools">
+      <div>
+        <div class="eyebrow">场景工具</div>
+        <h1>把“能讲清楚、能演示、能复用”的资产集中起来，形成穿透式监管场景工具包</h1>
+        <p class="lead">场景工具页建议按照演示系统、帆软产品 Demo、常规工具清单三层组织，便于售前、产品、方案和交付团队统一使用。</p>
+
+        <h2 class="section-title">演示系统</h2>
+        <div class="tool-grid">
+          <div class="mini-card"><strong>监管作战台</strong><span>展示今日风险、待办闭环、热门专题和模型命中趋势。</span></div>
+          <div class="mini-card"><strong>模型市场</strong><span>展示 65 个规格模型，支持按领域、建设分层、关键词筛选。</span></div>
+          <div class="mini-card"><strong>模型编辑器</strong><span>包含常规配置、智能画布、试跑、版本和关联失败分流。</span></div>
+          <div class="mini-card"><strong>预警详情</strong><span>展示命中规则、业务证据、结构化信息、AI 解释和下一步动作。</span></div>
+          <div class="mini-card"><strong>线索闭环</strong><span>线索池、我的工单、复核验收和督办看板形成完整流转。</span></div>
+          <div class="mini-card"><strong>驾驶舱画像</strong><span>监管总览、企业画像、模型画像、报送画像支持领导研判。</span></div>
+        </div>
+
+        <h2 class="section-title">帆软产品 Demo</h2>
+        <div class="tool-grid">
+          <div class="mini-card"><strong>资金穿透 Demo</strong><span>围绕账户、付款、合同、审批和异常路径展示资金监管价值。</span></div>
+          <div class="mini-card"><strong>投资监管 Demo</strong><span>围绕项目立项、审批、投资计划、实际执行和收益评价展示全过程监管。</span></div>
+          <div class="mini-card"><strong>合同采购 Demo</strong><span>围绕法审、招采、供应商、合同和付款联动识别异常。</span></div>
+          <div class="mini-card"><strong>线索闭环 Demo</strong><span>演示预警转线索、派单、整改、验收、销号的状态联动。</span></div>
+          <div class="mini-card"><strong>报送门禁 Demo</strong><span>展示主题指标、字段完整性、外键质量、异常分流和催办。</span></div>
+          <div class="mini-card"><strong>监管报告 Demo</strong><span>基于预警、线索、画像和模型运行情况生成汇报口径。</span></div>
+        </div>
+
+        <h2 class="section-title">常规工具清单</h2>
+        <div class="chip-row">
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">场景介绍页</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">客户汇报 PPT</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">场景话术</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">需求调研表</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">领域模型清单</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">数据源字段清单</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">政策条款清单</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">演示脚本</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">Demo 数据包</span>
+          <span class="chip" style="background:#e9f4ff;color:#2267cf;">交付边界说明</span>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="info-card">
+          <h2>工具使用原则</h2>
+          <ul class="bullet-list">
+            <li>客户沟通先用场景介绍页统一认知。</li>
+            <li>客户认可后再进入演示系统展示闭环。</li>
+            <li>明确需求后用帆软产品 Demo 证明可落地。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>建议优先打磨</h3>
+          <p>优先完成监管作战台、资金穿透、预警详情、线索闭环和监管报告五个高频演示点，保证每次客户沟通能讲出完整故事。</p>
+        </div>
+        <div class="quote-box">
+          <strong>演示节奏</strong>
+          <span>先看监管态势，再进入一个专题，看到风险命中后解释证据，最后转线索并展示整改销号。</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="content-panel" id="plan">
+      <div>
+        <div class="eyebrow">推进计划</div>
+        <h1>从场景资产、演示系统、帆软 Demo 到客户试点，分阶段推进穿透式监管能力沉淀</h1>
+        <p class="lead">推进计划页建议既展示公司内部节奏，也展示可对外说明的重要节点，帮助各团队知道当前要产出什么、下一步谁接力。</p>
+
+        <div class="plan-grid">
+          <div class="mini-card"><strong>阶段一：场景资产成型</strong><span>完成场景介绍页、模型清单、政策背景、演示脚本和 Demo 口径统一。</span></div>
+          <div class="mini-card"><strong>阶段二：演示系统完善</strong><span>优化首页作战台、重点领域模型、预警详情、线索闭环和 AI 助手嵌入。</span></div>
+          <div class="mini-card"><strong>阶段三：帆软产品 Demo 搭建</strong><span>选择资金、投资、合同采购等高价值专题，搭建可演示产品 Demo。</span></div>
+          <div class="mini-card"><strong>阶段四：客户试点验证</strong><span>选择标杆客户，围绕真实制度、数据和监管问题形成试点案例。</span></div>
+          <div class="mini-card"><strong>阶段五：方案标准化</strong><span>沉淀数据模板、模型模板、实施方法、报价边界和行业案例。</span></div>
+          <div class="mini-card"><strong>阶段六：规模化复用</strong><span>建立场景资产库和项目复盘机制，持续补充领域模型和客户案例。</span></div>
+        </div>
+
+        <h2 class="section-title">重要节点事项</h2>
+        <div class="timeline">
+          <div class="timeline-item"><div class="time">T+1周</div><div><strong>完成场景介绍页面内容与视觉稿</strong><span>统一首页风格、模块框架、核心话术和场景主张。</span></div></div>
+          <div class="timeline-item"><div class="time">T+2周</div><div><strong>完成演示系统脚本与重点页面优化</strong><span>重点打磨监管作战台、模型市场、预警详情、线索闭环。</span></div></div>
+          <div class="timeline-item"><div class="time">T+4周</div><div><strong>完成帆软产品 Demo 第一版</strong><span>优先选择 1-2 个专题跑通数据、模型、预警、闭环展示。</span></div></div>
+          <div class="timeline-item"><div class="time">T+1月</div><div><strong>形成客户沟通材料包</strong><span>包含 PPT、话术、政策背景、模型清单、演示脚本和 Demo 数据。</span></div></div>
+          <div class="timeline-item"><div class="time">T+2月</div><div><strong>选择试点客户并形成验证案例</strong><span>用真实客户场景校验监管价值、数据准备难点和交付边界。</span></div></div>
+          <div class="timeline-item"><div class="time">T+3月</div><div><strong>沉淀标准方案包和可复用资产库</strong><span>形成可复制的领域模型、产品 Demo、实施方法和案例材料。</span></div></div>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="info-card">
+          <h2>推进机制</h2>
+          <ul class="bullet-list">
+            <li>产品负责场景框架、核心话术和能力边界。</li>
+            <li>售前负责客户验证、行业材料和演示脚本。</li>
+            <li>解决方案与交付负责 Demo 搭建、数据模板和试点复盘。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>近期优先级</h3>
+          <p>先把场景介绍页和演示脚本跑通，再补帆软产品 Demo。避免先陷入功能堆叠，导致客户看不到穿透式监管的完整价值。</p>
+        </div>
+        <div class="quote-box">
+          <strong>推进判断标准</strong>
+          <span>每一阶段都要能回答：是否更容易对客户讲清楚，是否更容易演示闭环，是否更容易沉淀成可复用资产。</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll(".module-tab"));
+    const panels = Array.from(document.querySelectorAll(".content-panel"));
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.target;
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.id === target));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  </script>
+</body>
+</html>
